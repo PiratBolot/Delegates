@@ -1,47 +1,60 @@
-#include<iostream>
-#include<memory>
-#include"Delegate.h"
+#include <iostream>
+#include <mutex>
+#include "Delegate.h"
 
-struct A {
+struct SS {
 public:
-    A() : ptr(nullptr) {};
+	int foo(int i) {
+		std::cout << "Hello foo #" << i << std::endl;		
+		return i;
+	}
 
-    int Foo() { return 12; }
-
-    std::shared_ptr<void> ptr;
+	static int staticFoo(int i) {		
+		std::cout << "Hello staticFoo #" << i << std::endl;
+		return i;
+	}
 };
 
-class B : public A {
-
+auto lambdaFoo = [](int i) -> int {	
+	std::cout << "Hello lambdaFoo #" << i << std::endl;
+	return i;
 };
 
-int Foo1() { return 13; }
+int globalFoo(int i) {
+	std::cout << "Hello globalFoo #" << i << std::endl;
+	return i;
+}
 
 int main() {
-    const A a;
-    A b;
-    B c;
-    auto ptr = [](int) -> void {
-        std::cout << "Lambda function" << std::endl;
-    };
-    Delegates::Delegate<void(int)> t;
-    t = ptr;
-    t(12);
+	SS ss;
+	Delegates::Delegate<int(int)> del;
+	Delegates::Delegate<int(int)> temp;
+	
+	// Add a lambda
+	del = [](int i) -> int {
+		std::cout << "Hello lambda #" << i << std::endl;
+		return i;
+	};
+	del(1);
+	del = lambdaFoo;
+	del(2);
 
-    Delegates::Delegate<int(void)> v;
-    v.create<A, &A::Foo>(std::make_shared<A>(c));
-    Delegates::Delegate<int(void)> d(Delegates::Delegate<int(void)>::create<A, &A::Foo>(std::make_shared<A>(c)));
+	// Add a global function
+	temp = del.create<globalFoo>();	
+	temp(3);
+	del(4);
+	Delegates::Delegate<int(int)> d(Delegates::Delegate<int(int)>::create<globalFoo>());
+	d(5);
 
-    if (d) {
-        std::cout << "true" << std::endl;
-    } else {
-        std::cout << "false" << std::endl;
-    }
-    if (!v) {
-        std::cout << "true" << std::endl;
-    }
-    else {
-        std::cout << "false" << std::endl;
-    }
-    return 0;
+	// Add a static class method
+	d = &SS::staticFoo;
+	d(6);
+	
+	// Add a non-static class method
+	temp = del.create<SS, &SS::foo>(std::make_shared<SS>(ss));
+	temp(7);
+
+
+	system("pause");
+	return 0;
 }
