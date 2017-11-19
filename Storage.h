@@ -6,35 +6,35 @@
 namespace Delegates {
 																				
 	template<typename T>
-	class Storage;
+	class InvocationForm;
 
 	template<typename RetType, typename ...Args>
-	class Storage<RetType(Args...)> {
+	class InvocationForm<RetType(Args...)> {
 
 	public:
 
 		// Function signature
 		using invocationType = RetType(*)(std::shared_ptr<void>, Args...);		
 			
-		Storage() : object(nullptr), invocationFun(nullptr) {};
+		InvocationForm() : object(nullptr), invocationFun(nullptr) {};
 
-		Storage(std::shared_ptr<void> object, invocationType fun) :
+		InvocationForm(std::shared_ptr<void> object, invocationType fun) :
 			object(object), invocationFun(fun) {};
 
-		void clone(Storage& dest) const {
+		void clone(InvocationForm& dest) const {
 			dest = *this;
 		}
 
-		bool operator==(const Storage& elem) const {
+		bool operator==(const InvocationForm& elem) const {
 			return this->object == elem.object && 
 				this->invocationFun == elem.invocationFun;
 		}
 
-		bool operator!=(const Storage& elem) const {
+		bool operator!=(const InvocationForm& elem) const {
 			return !this->operator==(this, elem);
 		}
 
-		Storage& operator=(const Storage& elem) {
+		InvocationForm& operator=(const InvocationForm& elem) {
 			if (this == &elem) {
 				return *this;
 			}
