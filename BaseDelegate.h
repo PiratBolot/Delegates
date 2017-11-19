@@ -1,61 +1,60 @@
-#ifndef BASE_DELEGATE_H
-#define BASE_DELEGATE_H
+#ifndef STORAGE_DELEGATE_H
+#define STORAGE_DELEGATE_H
 
 #include<memory>
-#include <utility>
 
 namespace Delegates {
+																				
+	template<typename T>
+	class Storage;
 
-    template<typename T>
-    class BaseDelegate;
+	template<typename RetType, typename ...Args>
+	class Storage<RetType(Args...)> {
 
-    template<typename RetType, typename ...Args>
-    class BaseDelegate<RetType(Args...)> {
+	public:
 
-    public:
+		// Function signature
+		using invocationType = RetType(*)(std::shared_ptr<void>, Args...);		
+			
+		Storage() : object(nullptr), invocationFun(nullptr) {};
 
-        // Function signature
-        using invocationType = RetType(*)(std::shared_ptr<void>, Args...);
+		Storage(std::shared_ptr<void> object, invocationType fun) :
+			object(object), invocationFun(fun) {};
 
-        BaseDelegate() : object(nullptr), invocationFun(nullptr) {};
+		void clone(Storage& dest) const {
+			dest = *this;
+		}
 
-        BaseDelegate(std::shared_ptr<void> object, invocationType fun) :
-                object(std::move(object)), invocationFun(fun) {};
+		bool operator==(const Storage& elem) const {
+			return this->object == elem.object && 
+				this->invocationFun == elem.invocationFun;
+		}
 
-        void clone(BaseDelegate& dest) const {
-            dest = *this;
-        }
+		bool operator!=(const Storage& elem) const {
+			return !this->operator==(this, elem);
+		}
 
-        bool operator==(const BaseDelegate& elem) const {
-            return this->object == elem.object &&
-                   this->invocationFun == elem.invocationFun;
-        }
+		Storage& operator=(const Storage& elem) {
+			if (this == &elem) {
+				return *this;
+			}
+			object = elem.object;
+			invocationFun = elem.invocationFun;
+			return *this;
+		}
 
-        bool operator!=(const BaseDelegate& elem) const {
-            return !this->operator==(elem);
-        }
+		std::shared_ptr<void> getObject() const {
+			return object;
+		}
 
-        BaseDelegate& operator=(const BaseDelegate& elem) {
-            if (this == &elem) {
-                return *this;
-            }
-            object = elem.object;
-            invocationFun = elem.invocationFun;
-            return *this;
-        }
+		invocationType getInvocationFun() const {
+			return invocationFun;
+		}
 
-        std::shared_ptr<void> getObject() const {
-            return object;
-        }
-
-        invocationType getInvocationFun() const {
-            return invocationFun;
-        }
-
-    private:
-        std::shared_ptr<void> object;
-        invocationType invocationFun;
-    };
+	private:
+		std::shared_ptr<void> object;
+		invocationType invocationFun;		
+	};
 }
 
-#endif //BASE_DELEGATE_H
+#endif // !STORAGE_DELEGATE_H
